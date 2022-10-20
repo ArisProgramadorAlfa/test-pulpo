@@ -14,7 +14,15 @@ enum HttpStatus {
   internalServerError = 500
 };
 
+const axiosConfig = {
+  requests: {
+    timeout: 30000,
+    retries: 3
+  }
+};
+
 export {
   HttpMethods,
   HttpStatus,
+  axiosConfig,
 };
