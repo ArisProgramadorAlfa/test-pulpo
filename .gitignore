@@ -1,4 +1,4 @@
-**/.env
+form**/.env
 *.key
 **/dist
 node_modules
