@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { HttpStatus, Logger } from './../../core';
+// import { HttpStatus, Logger } from './../../core';
+import { HttpStatus, Logger } from '@core';
 
 const logger: Logger = new Logger(
   'home',

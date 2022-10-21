@@ -55,6 +55,10 @@
     /* Advanced Options */
     "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
     "baseUrl": "./",                       /* Base directory to resolve non-absolute module names. */
+    "paths": {
+      "@core": ["src/core/index.ts"],
+      "@database/postgres": ["src/db/postgres/index.ts"]
+    }
   },
   "include": [
     "./src/**/*.ts",
