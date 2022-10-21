@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "(if exist dist rmdir dist /S/Q) && tsc --diagnostics && cross-env NODE_ENV=development node dist/index.js",
-    "start:prod": "(if exist dist rmdir dist /S/Q) && tsc --diagnostics && cross-env NODE_ENV=prod node dist/index.js"
+    "start:prod": "(if exist dist rmdir dist /S/Q) && tsc --diagnostics && cross-env NODE_ENV=prod node dist/index.js",
+    "start:cli": "(if exist dist rmdir dist /S/Q) && tsc --diagnostics && cross-env NODE_ENV=development node dist/cli.js"
   },
   "repository": {
     "type": "git",

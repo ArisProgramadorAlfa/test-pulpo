@@ -1,5 +1,5 @@
 import { IATIImpl } from "../implements";
-import { IIATIBnd } from "../interfaces";
+import { IIATIBnd, IRankingResponse } from "../interfaces";
 import { IATISrvices } from "../services";
 import { Logger } from "../utils";
 
@@ -37,6 +37,13 @@ class RankingIATIUsecase {
       });
       throw error;
     }
+  }
+
+  async updateRanking(
+    countryCode: string
+  ): Promise<IRankingResponse> {
+    const ranking: IRankingResponse = {};
+    return ranking;
   }
 }
 

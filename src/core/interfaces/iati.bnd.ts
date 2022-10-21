@@ -1,4 +1,4 @@
-import { IATISrvices } from "../../services";
+import { IATISrvices } from "../services";
 
 interface IIATIBnd {
   getTransactionsByCountryCode(
