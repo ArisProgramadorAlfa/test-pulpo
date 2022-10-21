@@ -13,6 +13,5 @@ async function executeTasksAfterRunServer (): Promise<void> {
 
 app.listen(port, async () => {
   await executeTasksAfterRunServer();
-  const countryCrud = new CountryCrud();
   console.info(`Server runing in port: ${port}`);
 });
