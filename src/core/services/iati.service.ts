@@ -1,5 +1,5 @@
 import { HttpMethods } from '../constants';
-import { FetchRequest } from '../utils/FetchRequest';
+import { FetchRequest, Logger } from '../utils';
 
 class IATISrvices {
   private readonly url: string;
@@ -12,6 +12,7 @@ class IATISrvices {
 
   async getTransactions(
     query: { [keyof: string]: any } | null = null,
+    logger?: Logger
   ): Promise<any> {
     const fetchRequest: FetchRequest = new FetchRequest();
     const collection: string = 'transaction';
@@ -25,7 +26,9 @@ class IATISrvices {
         'Cache-Control': 'no-cache'
       },
       null,
-      query
+      query,
+      true,
+      logger
     );
     return data;    
   }

@@ -13,7 +13,7 @@ class CountryCrud {
     return await this.countryRepository.save(data);
   }
 
-  async getManyCountry (
+  async getMany (
     where?: Partial<Country>[],
     select?: (keyof Partial<Country>)[],
     relations?: string[],

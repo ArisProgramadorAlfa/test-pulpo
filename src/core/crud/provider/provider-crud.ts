@@ -15,7 +15,7 @@ class ProviderCrud {
     return await this.providerRepository.save(data);
   }
 
-  async getManyProvider (
+  async getMany (
     where?: Partial<Provider>[],
     select?: (keyof Partial<Provider>)[],
     relations?: string[],

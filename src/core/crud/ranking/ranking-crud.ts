@@ -15,7 +15,7 @@ class RankingCrud {
     return await this.rankingRepository.save(data);
   }
 
-  async getManyRanking (
+  async getMany (
     where?: Partial<Ranking>[],
     select?: (keyof Partial<Ranking>)[],
     relations?: string[],

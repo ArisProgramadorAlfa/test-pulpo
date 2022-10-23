@@ -13,7 +13,7 @@ class TransactionCrud {
     return await this.transactionRepository.save(data);
   }
 
-  async getManyTransaction (
+  async getMany (
     where?: Partial<Transaction>[],
     select?: (keyof Partial<Transaction>)[],
     relations?: string[],

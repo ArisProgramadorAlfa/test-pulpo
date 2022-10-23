@@ -34,8 +34,10 @@ class FetchRequest {
     headers: any = {},
     body: any = {},
     query: { [keyof: string]: any } | null = null,
-    printResult: boolean = true
+    printResult: boolean = true,
+    loggerSource?: Logger
   ): Promise<any> {
+    const logger: Logger = loggerSource || this.logger;
     let route = '';
     if (path) {
       route = `${url}/${path}${
@@ -58,7 +60,7 @@ class FetchRequest {
       Object.assign(axiosConfig, { data: body });
     }
 
-    this.logger.info({
+    logger.info({
       logKey: 'sendRequest',
       data: { axiosConfig }
     });
@@ -66,7 +68,7 @@ class FetchRequest {
       const result = await axios(axiosConfig);
 
       if (printResult) {
-        this.logger.info({
+        logger.info({
           logKey: 'sendRequest',
           data: {
             route,
@@ -80,7 +82,7 @@ class FetchRequest {
       }
       return Promise.reject(result.data);
     } catch (error) {
-      this.logger.error({
+      logger.error({
         logKey: 'sendRequest',
         message: `Error requesting ${route}`,
         error
