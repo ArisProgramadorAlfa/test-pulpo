@@ -1,4 +1,3 @@
-import { server } from './../../index';
 import { RankingIATIUsecase } from '../usecase';
 import { Country } from '../../db/postgres';
 import { CountryCrud } from '../crud';
@@ -22,7 +21,6 @@ describe('Test create ranking use case', () => {
       code: 'SD',
       name: 'Sudan'
     }]);
-    const testServer = supertest.agent(server);
   });
     
     

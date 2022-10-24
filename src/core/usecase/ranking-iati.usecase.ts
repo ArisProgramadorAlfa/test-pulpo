@@ -79,172 +79,38 @@ class RankingIATIUsecase {
   ): Promise<IRankingResponse> {
     const logger: Logger = loggerSource || this.loggerLocal;
     try {
-      /* #region  array of iati transactions request */
-      let rows = 10000;
-      let start = 0;
-      const transactionsByCountryCode: ITransactionsIATIResponse =
-        await this.iatiBnd.getTransactionsByCountryCode(
+      const transactionsRequestList: ITransactionsIATIResponse[] = await this.iatiBnd
+        .getRequestsOfTransactions(
           countryCode,
-          rows,
-          start,
           this.iatiSrvices,
           logger
         );
-      start = rows;
-      const requestLimit: number = 5;
-      const arrayPromises: Promise<ITransactionsIATIResponse>[] = [];
-      const transactrionsLimitByRequest: number = 10000;
-      const rowsMissing: number = transactionsByCountryCode.response.numFound - rows;
-      if (rowsMissing > 0) {
-        if (rowsMissing > transactrionsLimitByRequest) {
-          rows = Math.trunc(rowsMissing / requestLimit);
-          const rowsResidue: number =
-            transactionsByCountryCode.response.numFound - (rows * requestLimit);
-          for (let i = 0; i < requestLimit; i++) {
-            const rowsToFound: number = i + 1 >= requestLimit ?
-              rows += rowsResidue
-              : rows;
-            arrayPromises.push(
-              this.iatiBnd.getTransactionsByCountryCode(
-                countryCode,
-                rowsToFound,
-                start,
-                this.iatiSrvices,
-                logger
-              )
-            );
-            start += rows;
-          }
-        } else {
-          arrayPromises.push(
-            this.iatiBnd.getTransactionsByCountryCode(
-              countryCode,
-              rowsMissing,
-              start,
-              this.iatiSrvices,
-              logger
-            )
-          );
-        }
-      }
-      const transactionsRequestList: ITransactionsIATIResponse[] = [transactionsByCountryCode];
-      transactionsRequestList.push(...(await Promise.all(arrayPromises)));
-      /* #endregion */
 
+      const { transactionsTosave, ranking}: {
+        transactionsTosave: Partial<Transaction>[],
+        ranking: IRankingResponse
+      } = await this.iatiBnd.buildRankingWithIatiRequests(
+        transactionsRequestList,
+        countryCode,
+        limitYear,
+        logger
+      )
       logger?.debug({
         logKey: 'createRanking',
         data: {
-          transactionsRequestListLength: transactionsRequestList.length
-        }
-      });
-
-      const ranking: IRankingResponse = {};
-      /* #region  build ranking and transactions to save */
-      const minYearAllow: number = moment().year() - limitYear;
-      let breakRanking: boolean = false;
-      let transactionsTosave: Partial<Transaction>[] = [];
-      for (let i = 0; i < transactionsRequestList.length; i++) {
-        const transactions: IIATIDoc[] = transactionsRequestList[i].response.docs;
-        for (let j = 0; j < transactions.length; j++) {
-          const year: number = moment(
-            this.iatiBnd.clearTransactionStr(
-              transactions[j].transaction_transaction_date_iso_date
-            )
-          ).year();
-          if (minYearAllow >= year) {
-            breakRanking = true;
-            break;
-          }
-          const providerName: string = this.iatiBnd.clearTransactionStr(
-            transactions[j].transaction_provider_org_narrative
-          );
-          const amountOriginal: number = this.iatiBnd.clearTransactionValue(
-            transactions[j].transaction_value
-          );
-          if (!providerName || amountOriginal < 1) {
-            continue;
-          }
-          const amountInUsd: number = this.iatiBnd.clearTransactionStr(
-            transactions[j].default_currency) === 'USD' ? amountOriginal
-              : await this.iatiBnd.convertAmountToUSD(amountOriginal);
-          if (!ranking[year]) {
-            ranking[year] = {
-              [providerName]: amountInUsd
-            };
-          } else {
-            if (!ranking[year][providerName]) {
-              ranking[year][providerName] = amountInUsd;
-            } else {
-              const currentAmount: number = ranking[year][providerName];
-              ranking[year][providerName] = currentAmount + amountInUsd;
-            }
-          }
-          if (transactionsTosave.length < 10) {
-            transactionsTosave.push({
-              year: `${year}`,
-              providerName,
-              countryCode,
-              amountInUsd,
-              amount: amountOriginal,
-              iatiId: this.iatiBnd.clearTransactionStr(
-                transactions[j].iati_identifier
-              )
-            });
-          } else {
-            transactionsTosave.pop();
-            transactionsTosave = [{
-              year: `${year}`,
-              providerName,
-              countryCode,
-              amountInUsd,
-              amount: amountOriginal,
-              iatiId: this.iatiBnd.clearTransactionStr(
-                transactions[j].iati_identifier
-              )
-            }, ...transactionsTosave];
-          }
-        }
-        if (breakRanking) {
-          break;
-        }
-      }
-      /* #endregion */
-
-      logger?.debug({
-        logKey: 'createRanking',
-        data: {
-          // ranking
+          ranking,
           transactionsTosave
         }
       });
 
-      /* #region  save data */
-      const rankingsToSaveInDb: Partial<Ranking>[] = [];
-      const years: string[] = Object.keys(ranking);
-      for (const year of years) {
-        const prividers: string[] = Object.keys(ranking[+year]);
-        for (const provider of prividers) {
-          rankingsToSaveInDb.push({
-            providerName: provider,
-            amountInUsd: ranking[+year][provider],
-            countryCode,
-            year
-          });
-        }
-      }
-      const [rankingSaved, transactionsSaved] = await Promise.all([
-        this.rankingCrud.createMany(rankingsToSaveInDb),
-        this.transactionCrud.createMany(transactionsTosave)
-      ]);
-      // logger?.debug({
-      //   logKey: 'createRanking',
-      //   data: {
-      //     rankingSaved,
-      //     transactionsSaved
-      //   }
-      // });
-
-      /* #endregion */
+      await this.iatiBnd.saveRankingAndTransactions(
+        ranking,
+        transactionsTosave,
+        countryCode,
+        this.rankingCrud,
+        this.transactionCrud,
+        logger
+      )
 
       return this.iatiBnd.orderedRanking(ranking);
     } catch (error) {

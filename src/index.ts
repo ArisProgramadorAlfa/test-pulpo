@@ -23,5 +23,3 @@ app.listen(port, async () => {
   await executeTasksAfterRunServer();
   console.info(`Server runing in port: ${port}`);
 });
-
-export const server = app;
