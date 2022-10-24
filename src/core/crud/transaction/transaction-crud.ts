@@ -20,8 +20,6 @@ class TransactionCrud {
     order?: { [keyof: string]: 'DESC' | 'ASC' } | null,
     take?: number | null
   ): Promise<Transaction[]> {
-    const transactionRepository: Repository<Transaction> =
-      (global as any).dbSource.getRepository(Transaction);
     const findOptions: FindManyOptions<Transaction> = {};
     if(where) {
       findOptions.where = where
@@ -38,7 +36,7 @@ class TransactionCrud {
     if(take) {
       findOptions.take = take;
     }
-    const countriesFound: Transaction[] = await transactionRepository.find(findOptions);
+    const countriesFound: Transaction[] = await this.transactionRepository.find(findOptions);
     return countriesFound;
   }
 

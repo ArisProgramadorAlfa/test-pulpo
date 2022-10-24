@@ -27,7 +27,7 @@ class IATISrvices {
       },
       null,
       query,
-      true,
+      false,
       logger
     );
     return data;    

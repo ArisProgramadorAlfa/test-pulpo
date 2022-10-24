@@ -16,21 +16,21 @@ export class Transaction {
   id!: number;
 
   @Column({
-    type: 'numeric',
+    type: 'bigint',
     name: 'amount',
-    nullable: false,
+    nullable: true,
   })
   amount!: number;
 
   @Column('character varying', {
     name: 'amount_currency',
-    nullable: false,
+    nullable: true,
     length: 10,
   })
   amountCurrency!: string;
 
   @Column({
-    type: 'numeric',
+    type: 'bigint',
     name: 'amount_in_usd',
     nullable: false,
   })
@@ -52,15 +52,27 @@ export class Transaction {
 
   @Column("integer", {
     name: 'recipientCountryId',
-    nullable: false,
+    nullable: true,
   })
   countryId!: number;
 
   @Column("integer", {
     name: 'providerId',
-    nullable: false,
+    nullable: true,
   })
   providerId!: number;
+
+  @Column("character varying", {
+    name: 'country_code',
+    nullable: false,
+  })
+  countryCode!: string;
+
+  @Column("character varying", {
+    name: 'provider_name',
+    nullable: false,
+  })
+  providerName!: string;
 
   @ManyToOne(() => Country, (country: Country) => country.rankings)
   recipientCountry?: Country;

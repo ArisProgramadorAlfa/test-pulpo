@@ -19,7 +19,7 @@ class RankingCrud {
     where?: Partial<Ranking>[],
     select?: (keyof Partial<Ranking>)[],
     relations?: string[],
-    order?: { [keyof: string]: 'DESC' | 'ASC' } | null,
+    order?: { [keyof: string]: 'DESC' | 'ASC' },
     take?: number | null
   ): Promise<Ranking[]> {
     const findOptions: FindManyOptions<Ranking> = {};

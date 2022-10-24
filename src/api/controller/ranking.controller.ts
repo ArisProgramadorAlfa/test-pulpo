@@ -10,7 +10,7 @@ async function getRankingByCountryCodeController(req: Request, res: Response) {
   try {
     const countryCode: string = (req.query.countryCode as string) || 'SD';
     const rankingIATIUsecase: RankingIATIUsecase = new RankingIATIUsecase();
-    const result = await rankingIATIUsecase.getRankingByCountryCode(countryCode, logger);
+    const result = await rankingIATIUsecase.getRankingByCountryCode(countryCode, 5, logger);
     return res.status(HttpStatus.ok).json(result);
   } catch (error) {
     logger.error({

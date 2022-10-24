@@ -36,6 +36,21 @@ interface IIATIBnd {
     iatiServices: IATISrvices,
     logger?: Logger
   ): Promise<any>;
+  getArrayOfLastYears(
+    maxYears: number
+  ): number[];
+  convertAmountToUSD(
+    amount: number
+  ): Promise<number>;
+  orderedRanking(
+    ranking: IRankingResponse
+  ): IRankingResponse;
+  clearTransactionValue(
+    value: number | number[]
+  ): number;
+  clearTransactionStr(
+    value: string | string[]
+  ): string;
 }
 
 export { IIATIBnd };

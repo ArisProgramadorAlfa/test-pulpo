@@ -1,5 +1,5 @@
 import { Country } from "@database/postgres";
-import { FindManyOptions, Repository } from "typeorm";
+import { FindManyOptions, FindOneOptions, Repository } from "typeorm";
 
 class CountryCrud {
 
@@ -20,8 +20,6 @@ class CountryCrud {
     order?: { [keyof: string]: 'DESC' | 'ASC' } | null,
     take?: number | null
   ): Promise<Country[]> {
-    const CountryRepository: Repository<Country> =
-      (global as any).dbSource.getRepository(Country);
     const findOptions: FindManyOptions<Country> = {};
     if(where) {
       findOptions.where = where
@@ -38,8 +36,20 @@ class CountryCrud {
     if(take) {
       findOptions.take = take;
     }
-    const countriesFound: Country[] = await CountryRepository.find(findOptions);
+    const countriesFound: Country[] = await this.countryRepository.find(findOptions);
     return countriesFound;
+  }
+
+  async findOrCreate(
+    data: Omit<Partial<Country>, 'id'>
+  ): Promise<Country> {
+    const findOptions: FindOneOptions<Country> = {};
+    findOptions.where = data;
+    let countryFound: Country | null = await this.countryRepository.findOne(findOptions);
+    if (!countryFound) {
+      [countryFound] = await this.createMany([data]);
+    }
+    return countryFound;
   }
 
 }

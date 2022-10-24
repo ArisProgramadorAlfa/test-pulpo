@@ -23,7 +23,7 @@ export class Ranking {
   year!: string;
 
   @Column({
-    type: 'numeric',
+    type: 'bigint',
     name: 'amount_in_usd',
     nullable: false,
   })
@@ -31,13 +31,13 @@ export class Ranking {
 
   @Column("integer", {
     name: 'countryId',
-    nullable: false,
+    nullable: true,
   })
   countryId!: number;
 
   @Column("integer", {
     name: 'providerId',
-    nullable: false,
+    nullable: true,
   })
   providerId!: number;
 
@@ -46,6 +46,18 @@ export class Ranking {
 
   @ManyToOne(() => Provider, (provider: Provider) => provider.rankings)
   provider?: Provider;
+
+  @Column("character varying", {
+    name: 'country_code',
+    nullable: false,
+  })
+  countryCode!: string;
+
+  @Column("character varying", {
+    name: 'provider_name',
+    nullable: false,
+  })
+  providerName!: string;
 
   @CreateDateColumn()
   createdAt?: Date;
