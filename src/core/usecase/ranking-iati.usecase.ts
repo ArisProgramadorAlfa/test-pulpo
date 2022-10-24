@@ -31,7 +31,7 @@ class RankingIATIUsecase {
     countryCode: string,
     limitYears: number = 5,
     loggerSource?: Logger
-  ): Promise<IRankingResponse> {
+  ): Promise<IRankingResponse | null> {
     const logger: Logger = loggerSource || this.loggerLocal;
     try {
       const currentsListTofound: number[] = this.iatiBnd.getArrayOfLastYears(limitYears);
@@ -39,25 +39,10 @@ class RankingIATIUsecase {
         logKey: 'getRankingByCountryCode',
         data: { currentsListTofound }
       });
-      const country: Country = await this.iatiBnd.getCountry(
-        this.countryCrud,
-        countryCode
-      );
-      logger?.info({
-        logKey: 'getRankingByCountryCode',
-        data: { country }
-      });
-      if (!country) {
-        logger?.warning({
-          logKey: 'getRankingByCountryCode',
-          message: `Country ${countryCode} not found.`
-        });
-        throw new Error('Country code not found');
-      }
-      const ranking: IRankingResponse = await this.iatiBnd.getRankingFormatted(
+      const ranking: IRankingResponse | null = await this.iatiBnd.getRankingFormatted(
         currentsListTofound,
         this.rankingCrud,
-        country.id,
+        countryCode,
         undefined,
         logger,
       );

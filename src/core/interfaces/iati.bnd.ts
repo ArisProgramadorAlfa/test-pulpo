@@ -30,10 +30,10 @@ interface IIATIBnd {
   getRankingFormatted(
     years: number[],
     rankingCrud: RankingCrud,
-    countryId?: number,
+    countryCode: string,
     providerId?: number,
     logger?: Logger | undefined
-  ): Promise<IRankingResponse>;
+  ): Promise<IRankingResponse | null>;
   getTransactionsByCountryCode(
     countryCode: string,
     rows: number,

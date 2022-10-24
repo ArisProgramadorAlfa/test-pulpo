@@ -121,16 +121,16 @@ class IATIImpl implements IIATIBnd {
   async getRankingFormatted(
     years: number[],
     rankingCrud: RankingCrud,
-    countryId?: number,
+    countryCode: string,
     providerId?: number,
     logger?: Logger | undefined
-  ): Promise<IRankingResponse> {
+  ): Promise<IRankingResponse | null> {
     try {
       const where: Partial<Ranking>[] = years.map((year) => ({
         year: `${year}`,
       }));
-      if (countryId) {
-        where.push({ countryId });
+      if (countryCode) {
+        where.push({ countryCode });
       }
       if (providerId) {
         where.push({ providerId });
@@ -156,6 +156,13 @@ class IATIImpl implements IIATIBnd {
         logKey: "getRankingByCountryCode",
         data: { rankingFound },
       });
+      if (!rankingFound?.length) {
+        logger?.warning({
+          logKey: "getRankingByCountryCode",
+          message: 'Ranking not found'
+        });
+        return null;
+      }
       const rankingFormatted: IRankingResponse =
         this.formatRanking(rankingFound);
       logger?.info({
@@ -474,7 +481,7 @@ class IATIImpl implements IIATIBnd {
   ): Promise<void> {
     const [rankingFound]: Ranking[] = await rankingCrud.getMany([{
       providerName: rankingData.providerName,
-      countryCode,
+      countryCode: rankingData.countryCode,
       year: rankingData.year
     }], ['id', 'amountInUsd']);
     if (rankingFound) {
