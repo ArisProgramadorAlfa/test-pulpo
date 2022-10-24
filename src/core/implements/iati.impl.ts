@@ -66,10 +66,39 @@ class IATIImpl implements IIATIBnd {
   }
 
   async getLastTransactions(
-    maxTransactions: number,
+    countryCode: string,
+    transactionCrud: TransactionCrud,
+    maxTransactions: number = 10,
     logger?: Logger
-  ): Promise<Transaction> {
-    throw new Error("Method not implemented.");
+  ): Promise<Transaction[]> {
+    try {
+      const where: Partial<Transaction>[] = [{
+        countryCode
+      }];
+      const fieldsSelected: (keyof Partial<Transaction>)[] = [
+        "id",
+        "countryCode",
+        "providerName",
+        'iatiId',
+        'amountInUsd',
+      ];
+      const transactions: Transaction[] = await transactionCrud.getMany(
+        where,
+        fieldsSelected,
+        undefined,
+        {
+          createdAt: 'DESC'
+        },
+        maxTransactions
+      );
+      return transactions;
+    } catch (error) {
+      logger?.error({
+        logKey: 'getLastTransactions',
+        error
+      });
+      throw error;
+    }
   }
 
   formatRanking(rankingList: Ranking[]): IRankingResponse {
@@ -96,44 +125,52 @@ class IATIImpl implements IIATIBnd {
     providerId?: number,
     logger?: Logger | undefined
   ): Promise<IRankingResponse> {
-    const where: Partial<Ranking>[] = years.map((year) => ({
-      year: `${year}`,
-    }));
-    if (countryId) {
-      where.push({ countryId });
-    }
-    if (providerId) {
-      where.push({ providerId });
-    }
-    const fieldsSelected: (keyof Partial<Ranking>)[] = [
-      "year",
-      "amountInUsd",
-      "countryCode",
-      "providerName",
-    ];
-    const relations: string[] = ["country", "provider"];
-    const order: { [keyof: string]: "DESC" | "ASC" } = {
-      year: "DESC",
-      amountInUsd: "DESC",
-    };
-    const rankingFound: Ranking[] = await rankingCrud.getMany(
-      where,
-      fieldsSelected,
-      relations,
-      order
-    );
-    logger?.info({
-      logKey: "getRankingByCountryCode",
-      data: { rankingFound },
-    });
-    const rankingFormatted: IRankingResponse =
-      this.formatRanking(rankingFound);
-    logger?.info({
-      logKey: "getRankingByCountryCode",
-      data: { rankingFormatted },
-    });
+    try {
+      const where: Partial<Ranking>[] = years.map((year) => ({
+        year: `${year}`,
+      }));
+      if (countryId) {
+        where.push({ countryId });
+      }
+      if (providerId) {
+        where.push({ providerId });
+      }
+      const fieldsSelected: (keyof Partial<Ranking>)[] = [
+        "year",
+        "amountInUsd",
+        "countryCode",
+        "providerName",
+      ];
+      const relations: string[] = ["country", "provider"];
+      const order: { [keyof: string]: "DESC" | "ASC" } = {
+        year: "DESC",
+        amountInUsd: "DESC",
+      };
+      const rankingFound: Ranking[] = await rankingCrud.getMany(
+        where,
+        fieldsSelected,
+        relations,
+        order
+      );
+      logger?.info({
+        logKey: "getRankingByCountryCode",
+        data: { rankingFound },
+      });
+      const rankingFormatted: IRankingResponse =
+        this.formatRanking(rankingFound);
+      logger?.info({
+        logKey: "getRankingByCountryCode",
+        data: { rankingFormatted },
+      });
 
-    return rankingFormatted;
+      return rankingFormatted;
+    } catch (error) {
+      logger?.error({
+        logKey: "getRankingFormatted",
+        error,
+      });
+      throw error;
+    }
   }
 
   async getTransactionsByCountryCode(
@@ -165,7 +202,7 @@ class IATIImpl implements IIATIBnd {
       return response;
     } catch (error) {
       logger?.error({
-        logKey: "getRankingByCountryCode",
+        logKey: "getTransactionsByCountryCode",
         error,
       });
       throw error;
@@ -389,7 +426,7 @@ class IATIImpl implements IIATIBnd {
       };
     } catch (error) {
       logger?.error({
-        logKey: "updateRanking",
+        logKey: "buildRankingWithIatiRequests",
         error,
       });
       throw error;
@@ -424,11 +461,32 @@ class IATIImpl implements IIATIBnd {
       ]);
     } catch (error) {
       logger?.error({
-        logKey: "createRanking",
+        logKey: "saveRankingAndTransactions",
         error,
       });
       throw error;
     }
+  }
+
+  async searchAndUpdateOrCreateRanking(
+    rankingData: Partial<Ranking>,
+    rankingCrud: RankingCrud
+  ): Promise<void> {
+    const [rankingFound]: Ranking[] = await rankingCrud.getMany([{
+      providerName: rankingData.providerName,
+      countryCode,
+      year: rankingData.year
+    }], ['id', 'amountInUsd']);
+    if (rankingFound) {
+      await rankingCrud.updateOne({ id: rankingFound.id }, {
+        amountInUsd: +rankingFound.amountInUsd + rankingData.amountInUsd!
+      })
+    } else {
+      await rankingCrud.createMany([{
+        ...rankingData
+      }]);
+    }
+    return;
   }
 }
 

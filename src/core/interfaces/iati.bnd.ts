@@ -21,9 +21,11 @@ interface IIATIBnd {
     name?: string
   ): Promise<Provider>;
   getLastTransactions(
+    countryCode: string,
+    transactionCrud: TransactionCrud,
     maxTransactions: number,
     logger?: Logger
-  ): Promise<Transaction>;
+  ): Promise<Transaction[]>;
   formatRanking(rankingList: Ranking[]): IRankingResponse;
   getRankingFormatted(
     years: number[],
@@ -65,6 +67,10 @@ interface IIATIBnd {
     rankingCrud: RankingCrud,
     transactionCrud: TransactionCrud,
     logger?: Logger
+  ): Promise<void>;
+  searchAndUpdateOrCreateRanking(
+    rankingData: Partial<Ranking>,
+    rankingCrud: RankingCrud
   ): Promise<void>;
 }
 
