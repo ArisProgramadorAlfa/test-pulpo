@@ -21,7 +21,7 @@ async function getRanking(
 }
 
 
-const countryCode = process.argv[2];
+const countryCode = process.argv[2] || 'SD';
 loggerLocal.info({
   logKey: 'cli.ranking',
   message: 'Starting...'

@@ -21,7 +21,7 @@ async function createRanking(
 }
 
 
-const countryCode = process.argv[2];
+const countryCode = process.argv[2] || 'SD';
 createRanking(countryCode).then(ranking => {
   loggerLocal.info({
     logKey: 'cli.ranking',
